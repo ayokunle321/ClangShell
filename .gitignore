@@ -1,0 +1,18 @@
+# ignore build
+/build
+
+/cmake-build-debug
+
+# ignore compiled programs
+*.o
+
+# ignore cmake files
+CMakeCache.txt
+CMakeFiles/
+
+# ignore editor files
+*.swp
+*.log
+
+# ignore executables
+*.out

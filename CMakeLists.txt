@@ -3,5 +3,9 @@ project(ClangShell C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(ClangShell
+# add the include directory
+include_directories(include)
+
+# target
+add_executable(clangshell
         src/shell.c)

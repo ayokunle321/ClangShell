@@ -12,3 +12,9 @@ void shell_loop() {
     char *args[MAX_ARGS];
 }
 
+int main()
+{
+
+}
+
+
