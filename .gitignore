@@ -1,6 +1,10 @@
 # ignore build
 /build
 
+# ignore bin
+./bin
+
+# ignore debug folder
 /cmake-build-debug
 
 # ignore compiled programs
