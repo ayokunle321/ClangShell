@@ -2,7 +2,7 @@
 /build
 
 # ignore bin
-./bin
+/bin
 
 # ignore debug folder
 /cmake-build-debug
@@ -15,6 +15,7 @@ CMakeCache.txt
 CMakeFiles/
 
 # ignore editor files
+/.idea
 *.swp
 *.log
 

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <builtins.h>
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARGS 100
@@ -23,6 +24,18 @@ void parse_input(char* input, char** args){
 	}
 
 	args[i] = NULL; // null terminate args array
+}
+
+int execute_builtin(char **args){
+	if (strcmp(args[0], "cd") == 0) {
+		return cd_command(args);
+	}
+
+	if (strcmp(args[0], "exit") == 0) {
+		return exit_command(args);
+	}
+
+	return -1; // else not a built-in command
 }
 
 void shell_loop() {
@@ -45,7 +58,18 @@ void shell_loop() {
 			continue;
 		}
 
+		// split input into args
 		parse_input(input, args);
+
+		// check if command is built in
+		int builtin_status = execute_builtin(args);
+		if (builtin_status == 0) {
+			break; // exit shell
+		}
+
+		if (builtin_status == 1) {
+			continue; // command executed now continue loop
+		}
 
 		pid = fork(); // making a new process to execute the command
 
