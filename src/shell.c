@@ -4,7 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <builtins.h>
+#include "builtins.h"
+#include "compiler.h"
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARGS 100
@@ -26,6 +27,16 @@ void parse_input(char* input, char** args){
 	args[i] = NULL; // null terminate args array
 }
 
+// function to check for ".c" files and compile them
+int check_and_compile(char **args) {
+	// check if the command is for a C file
+	if (args[0] != NULL && strstr(args[0], ".c") != NULL) {
+		return compile_and_run(args[0]);
+	}
+	return -1; // else not a C file
+}
+
+// function to execute built-in commnads
 int execute_builtin(char **args){
 	if (strcmp(args[0], "cd") == 0) {
 		return cd_command(args);
@@ -65,10 +76,14 @@ void shell_loop() {
 		int builtin_status = execute_builtin(args);
 		if (builtin_status == 0) {
 			break; // exit shell
+		} if (builtin_status == 1) {
+			continue; // command executed now continue loop
 		}
 
-		if (builtin_status == 1) {
-			continue; // command executed now continue loop
+		// check if the command is a C file and compile it
+		int compile_status = check_and_compile(args);
+		if (compile_status == 0) {
+			continue;
 		}
 
 		pid = fork(); // making a new process to execute the command

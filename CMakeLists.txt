@@ -12,4 +12,5 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
 # executable target
 add_executable(clangshell
         src/shell.c
-        src/builtins.c)
+        src/builtins.c
+        src/compiler.c)
