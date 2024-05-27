@@ -5,10 +5,61 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "builtins.h"
-#include "compiler.h"
+#include "snippet_manager.h"
+
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARGS 100
+#define CODE_BUFFER_SIZE 4096
+
+char current_mode[10] = "";	// no default mode on startup
+char code_buffer[CODE_BUFFER_SIZE]; // buffer to hold code during multi-line input
+
+// function to check if a command exists in the system
+int is_tool_available(const char *tool) {
+	char command[100];
+	snprintf(command, sizeof(command), "command -v %s > /dev/null 2>&1", tool);
+	return system(command) == 0;
+}
+
+// function to change the mode
+void set_mode(const char*mode) {
+	if (strcmp(mode, "python") == 0) {
+		if (is_tool_available("python3")) {
+			strcpy(current_mode, mode);
+			printf("Mode switched to python\n");
+		} else {
+			printf("python3 is not installed. Please install python to use this mode.\n");
+		}
+
+	} else if (strcmp(mode, "c") == 0) {
+		if (is_tool_available("gcc")) {
+			strcpy(current_mode, mode);
+		} else {
+			printf("gcc is not installed. Please install Clang to use this mode.\n");
+		}
+
+	} else {
+		printf("Unsupported mode: %x\n", *mode);
+	}
+}
+
+
+
+
+void load_snippet(char *snippet_name) {
+	char snippet[MAX_INPUT_SIZE * 100]; // buffer to hold loaded snippet
+
+	if (retrieve_snippet(snippet_name, snippet)) {
+		printf("Loaded snippet '%s'. You can edit it before running. \n", snippet_name);
+		printf("%s\n", snippet); // display snippet
+
+		strcpy(code_buffer, snippet); // load snippet in code buffer
+		collect_multiline_input() // allow user to edit and run
+	} else {
+		printf("Snippet '%s' not found.\n", snippet_name);
+	}
+}
 
 // tokenizes the input and skips extra spaces
 void parse_input(char* input, char** args){
@@ -27,16 +78,7 @@ void parse_input(char* input, char** args){
 	args[i] = NULL; // null terminate args array
 }
 
-// function to check for ".c" files and compile them
-int check_and_compile(char **args) {
-	// check if the command is for a C file
-	if (args[0] != NULL && strstr(args[0], ".c") != NULL) {
-		return compile_and_run(args[0]);
-	}
-	return -1; // else not a C file
-}
-
-// function to execute built-in commnads
+// function to execute built-in commands
 int execute_builtin(char **args){
 	if (strcmp(args[0], "cd") == 0) {
 		return cd_command(args);
@@ -46,7 +88,12 @@ int execute_builtin(char **args){
 		return exit_command(args);
 	}
 
-	return -1; // else not a built-in command
+	if (strcmp(args[0], "mode") == 0) {
+		set_mode(args[1]); // set the language mode
+		return 1; // success
+	}
+
+	return -1; // not a built-in command
 }
 
 void shell_loop() {
@@ -57,7 +104,7 @@ void shell_loop() {
 
 	// main loop listening for shell
 	while (1) {
-		printf("clang-shell> ");
+		printf("%s-shell> ", current_mode);		// show current mode in prompt
 		fgets(input, MAX_INPUT_SIZE, stdin);	// read user input
 
 		// remove new line from input
@@ -72,18 +119,12 @@ void shell_loop() {
 		// split input into args
 		parse_input(input, args);
 
-		// check if command is built in
+		// check if command is built-in
 		int builtin_status = execute_builtin(args);
 		if (builtin_status == 0) {
 			break; // exit shell
 		} if (builtin_status == 1) {
 			continue; // command executed now continue loop
-		}
-
-		// check if the command is a C file and compile it
-		int compile_status = check_and_compile(args);
-		if (compile_status == 0) {
-			continue;
 		}
 
 		pid = fork(); // making a new process to execute the command
