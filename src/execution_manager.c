@@ -6,17 +6,19 @@
 #include "mode_manager.h"
 
 // function to execute code based on the current mode
-void execute_mode() {
+void execute_code() {
 	char* mode = get_current_mode();	// get the current language mode
 	char* code = get_code_buffer();		// get the collected code from input
 
 	if (strcmp(mode, "python") == 0) {
-		// save the python code to a temp file
+		// save the python code to a temp file and run
 		FILE *file = fopen("temp_code.py", "w");
 		if (file) {
 			fputs(code, file);
 			fclose(file);
 			system("python3 temp_code.py");
+		} else {
+			printf("ERROR: Could not write to temp_code.py\n");
 		}
 	} else if (strcmp(mode, "c") == 0) {
 		// save the C code to a temporary file, compile and run
@@ -32,5 +34,4 @@ void execute_mode() {
 	} else {
 		printf("No valid mode set.");
 	}
-
 }

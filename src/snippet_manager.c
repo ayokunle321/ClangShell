@@ -25,8 +25,8 @@ void save_snippet(char* name, char* content) {
 	}
 }
 
-// function to retrieve snippet by name
-int retrieve_snippet(char* name, char* content_buffer) {
+// function to load a snippet by name
+int load_snippet(const char* name, char* content_buffer) {
 	for (int i = 0; i < snippet_count; i++) {
 		if (strcmp(snippet_storage[i].name, name) == 0) {
 			strcpy(content_buffer, snippet_storage[i].content);
@@ -49,7 +49,8 @@ void list_snippets(){
 }
 
 // function to delete snippet
-void delete_snippet(char* name) {
+void delete_snippet(char* name)
+{
 	for (int i = 0; i < snippet_count; i++) {
 		if (strcmp(snippet_storage[i].name, name) == 0) {
 			for (int j = i; j < snippet_count - 1; j++) {
@@ -63,5 +64,5 @@ void delete_snippet(char* name) {
 	}
 
 	printf("Snippet '%s' not found.\n", name);
-
 }
+

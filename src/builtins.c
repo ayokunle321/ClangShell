@@ -4,7 +4,7 @@
 #include "builtins.h"
 
 
-// function for "cd" command
+// command to change directory
 int cd_command(char **args) {
 	if (args[1] == NULL) {
 		fprintf(stderr, "cd: expected argument to \"cd\"\n");
@@ -13,11 +13,10 @@ int cd_command(char **args) {
 			perror("cd");
 		}
 	}
-
 	return 1; // continue shell loop
 }
 
-// function for "exit" command
-int exit_command(char **args) {
+// command to exit polyshell
+int exit_command() {
 	return 0; // exit shell
 }

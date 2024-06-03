@@ -1,13 +1,13 @@
 #pragma once
 
-// function to save a snippet
+// load snippet
+int load_snippet(const char* name, char* content_buffer);
+
+// save a snippet
 void save_snippet(char* name, char* content);
 
-// function to retrieve a snippet by name
-int retrieve_snippet(char* name, char* content_buffer);
-
-// function to list all saved snippets
+// list all saved snippets
 void list_snippets();
 
-// function to delete a snippet by name
+// delete a snippet
 void delete_snippet(char* name);

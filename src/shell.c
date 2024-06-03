@@ -5,30 +5,14 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "builtins.h"
+#include "input_manager.h"
+#include "mode_manager.h"
+#include "execution_manager.h"
 #include "snippet_manager.h"
 
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARGS 100
-#define CODE_BUFFER_SIZE 4096
-
-char current_mode[10] = "";	// no default mode on startup
-char code_buffer[CODE_BUFFER_SIZE]; // buffer to hold code during multi-line input
-
-
-void load_snippet(char *snippet_name) {
-	char snippet[MAX_INPUT_SIZE * 100]; // buffer to hold loaded snippet
-
-	if (retrieve_snippet(snippet_name, snippet)) {
-		printf("Loaded snippet '%s'. You can edit it before running. \n", snippet_name);
-		printf("%s\n", snippet); // display snippet
-
-		strcpy(code_buffer, snippet); // load snippet in code buffer
-		collect_multiline_input() // allow user to edit and run
-	} else {
-		printf("Snippet '%s' not found.\n", snippet_name);
-	}
-}
 
 // tokenizes the input and skips extra spaces
 void parse_input(char* input, char** args){
@@ -40,7 +24,6 @@ void parse_input(char* input, char** args){
 		if (strlen(token) > 0) {
 			args[i++] = token;
 		}
-
 		token = strtok(NULL, " ");
 	}
 
@@ -54,7 +37,7 @@ int execute_builtin(char **args){
 	}
 
 	if (strcmp(args[0], "exit") == 0) {
-		return exit_command(args);
+		return exit_command();
 	}
 
 	if (strcmp(args[0], "mode") == 0) {
@@ -71,9 +54,9 @@ void shell_loop() {
 	pid_t pid;						// process id
 	int status;						// status for child process
 
-	// main loop listening for shell
+	// main loop listening for shell input
 	while (1) {
-		printf("%s-shell> ", current_mode);		// show current mode in prompt
+		printf("%s-shell> ", get_current_mode());	// show current mode in prompt
 		fgets(input, MAX_INPUT_SIZE, stdin);	// read user input
 
 		// remove new line from input
@@ -96,6 +79,22 @@ void shell_loop() {
 			continue; // command executed now continue loop
 		}
 
+		if (strcmp(args[0], "start") == 0) {
+			collect_multiline_input();	// collect code input
+			if (strlen(get_code_buffer()) > 0) {
+				execute_code(); // execute the code if run is typed
+			}
+			continue;
+		}
+
+		if (strcmp(args[0], "load_snippet") == 0 && args[1] != NULL) {
+			memset(get_code_buffer(), 0, CODE_BUFFER_SIZE);
+			load_snippet(args[1], get_code_buffer());	// load snippet
+			display_code_buffer();
+			collect_multiline_input();
+			continue;
+		}
+
 		pid = fork(); // making a new process to execute the command
 
 		// child process
@@ -108,19 +107,16 @@ void shell_loop() {
 
 		if (pid < 0) {
 			perror("ERROR: a new process could not be created"); // display error if forking failed
-
 		}
 
 		// parent process
 		else {
 			waitpid(pid, &status, 0); // wait for child process to complete
 		}
-
 	}
 }
 
-int main()
-{
+int main() {
 	// call shell loop
 	shell_loop();
 }
