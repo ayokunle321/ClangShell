@@ -3,35 +3,46 @@
 #include <stdlib.h>
 #include "mode_manager.h"
 
-static char current_mode[10] = "";
+#define MAX_MODE_LENGTH 20
 
-// function to check if a command exists in the system
+static char current_mode[MAX_MODE_LENGTH] = "";
+
+// checks if a command exists in the system
 int is_tool_available(const char *tool) {
 	char command[100];
 	snprintf(command, sizeof(command), "command -v %s > /dev/null 2>&1", tool);
 	return system(command) == 0;
 }
 
-// function to change the mode
-void set_mode(const char*mode) {
-	if (strcmp(mode, "python") == 0) {
-		if (is_tool_available("python3")) {
-			strcpy(current_mode, mode);
-			printf("Mode switched to python\n");
-		} else {
-			printf("python3 is not installed. Please install python3 to use this mode.\n");
-		}
+// sets program mode
+int set_mode(const char*mode) {
+	// supported modes and their tools
+	struct {
+		const char *name;
+		const char *tool;
+	} modes[] = {
+		{"python", "python3"},
+		{"c", "gcc"}
+		};
 
-	} else if (strcmp(mode, "c") == 0) {
-		if (is_tool_available("gcc")) {
-			strcpy(current_mode, mode);
+	for (size_t i = 0; i < sizeof(modes) / sizeof(modes[0]); ++i) {
+		if (strcmp(mode, modes[i].name) == 0) {
+			// check if required tool is available
+			if (is_tool_available(modes[i].tool)){
+				strncpy(current_mode, mode,	MAX_MODE_LENGTH - 1);
+				current_mode[MAX_MODE_LENGTH - 1] = '\0'; // ensure its null terminated
+				printf("Mode set to '%s'.\n", mode);
+				return 0;
+			}
 		} else {
-			printf("gcc is not installed. Please install gcc to use this mode.\n");
+			printf("ERROR: '%s' is not installed. Please install '%s' to use this mode.\n",
+				modes[i].tool, modes[i].tool);
+			return -2; // tool not available
 		}
-
-	} else {
-		printf("Unsupported mode: %s\n", mode);
 	}
+
+	printf("ERROR: Unsupported mode %s. Available modes are 'python' and 'c'.\n", mode);
+	return -1; // unsupported mode
 }
 
 // function to get the current mode

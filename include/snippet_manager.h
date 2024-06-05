@@ -4,10 +4,10 @@
 int load_snippet(const char* name, char* content_buffer);
 
 // save a snippet
-void save_snippet(char* name, char* content);
+int save_snippet(const char* name, const char* content);
 
 // list all saved snippets
 void list_snippets();
 
 // delete a snippet
-void delete_snippet(char* name);
+int delete_snippet(const char* name);

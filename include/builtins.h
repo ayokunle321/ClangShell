@@ -1,7 +1,7 @@
 #pragma once
 
-// command for changing directories
+// command to change directory
 int cd_command(char **args);
 
-// command for exiting polyshell
+// command to exit shell
 int exit_command();

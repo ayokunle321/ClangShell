@@ -1,7 +1,7 @@
 #pragma once
 
 // function to set language mode
-void set_mode(const char* mode);
+int set_mode(const char* mode);
 
 // function to get the current language mode
 char* get_current_mode();
