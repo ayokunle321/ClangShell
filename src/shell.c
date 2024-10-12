@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +7,23 @@
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_ARGS 100
+
+// tokenizes the input and skips extra spaces
+void parse_input(char* input, char** args){
+	int i = 0;
+	char* token = strtok(input, " ");
+
+	while (token != NULL) {
+		// skip empty tokens
+		if (strlen(token) > 0) {
+			args[i++] = token;
+		}
+
+		token = strtok(NULL, " ");
+	}
+
+	args[i] = NULL; // null terminate args array
+}
 
 void shell_loop() {
 	char input[MAX_INPUT_SIZE];		// user input
@@ -19,19 +37,15 @@ void shell_loop() {
 		fgets(input, MAX_INPUT_SIZE, stdin);	// read user input
 
 		// remove new line from input
-		int input_len = strlen(input);
+		int input_len = strlen(input)-1;
 		input[input_len] = '\0';
 
-		// split input into command and args
-		char *token = strtok(input, " ");
-		int i = 0;
-
-		while (token != NULL ) {
-			args[i++] = token;
-			token = strtok(NULL, " ");	// split remaining tokens
+		// skip empty input
+		if (input_len == 0 || isspace(input[0])) {
+			continue;
 		}
 
-		args[i] = NULL; // null terminate array
+		parse_input(input, args);
 
 		pid = fork(); // making a new process to execute the command
 

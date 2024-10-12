@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 11)
 include_directories(include)
 
 # executable folder
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY /bin)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
 
 # executable target
 add_executable(clangshell
